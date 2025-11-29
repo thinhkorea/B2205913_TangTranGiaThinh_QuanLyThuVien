@@ -6,7 +6,7 @@ const publisherSchema = new mongoose.Schema(
     Ten_NXB: { type: String, required: true },
     Dia_Chi: { type: String },
   },
-  { collection: "Nha_Xuat_Ban", timestamps: true }
+  { collection: "Nha_Xuat_Ban", timestamps: true, versionKey: false }
 );
 
 export default mongoose.model("Publisher", publisherSchema);

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import bookRoutes from "./routes/book.routes.js";
 import publisherRoutes from "./routes/publisher.routes.js";
+import authorRoutes from "./routes/author.routes.js";
 import readerRoutes from "./routes/reader.routes.js";
 import borrowRoutes from "./routes/borrow.routes.js";
 import staffRoutes from "./routes/staff.routes.js";
@@ -22,8 +23,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/readers", readerRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/publishers", publisherRoutes);
+app.use("/api/authors", authorRoutes);
 app.use("/api/borrows", borrowRoutes);
-app.use("/api/staff", staffRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello from MEVN backend — Server đang hoạt động!");

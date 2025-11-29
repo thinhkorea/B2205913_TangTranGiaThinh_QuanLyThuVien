@@ -1,9 +1,11 @@
 import Book from "../models/book.model.js";
 
-// Lấy danh sách tất cả sách (kèm thông tin NXB)
+// Lấy danh sách tất cả sách (kèm thông tin NXB và tác giả)
 export const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find().populate("Ma_NXB"); // lấy luôn thông tin NXB
+    const books = await Book.find()
+      .populate("Ma_NXB") // lấy luôn thông tin NXB
+      .populate("Tac_Gia"); // lấy luôn thông tin tác giả
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi lấy danh sách sách", error });
@@ -55,7 +57,9 @@ export const searchBooks = async (req, res) => {
     const regex = new RegExp(keyword, "i"); // không phân biệt hoa thường
     const results = await Book.find({
       $or: [{ Ten_Sach: regex }, { Tac_Gia: regex }],
-    }).populate("Ma_NXB");
+    })
+    .populate("Ma_NXB")
+    .populate("Tac_Gia");
     res.status(200).json(results);
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi tìm kiếm sách", error });

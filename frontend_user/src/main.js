@@ -1,9 +1,14 @@
-import { createApp } from 'vue'
-import axios from 'axios'
-import './style.css'
-import App from './App.vue'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import axios from "axios";
+import App from "./App.vue";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "@fortawesome/fontawesome-free/css/all.css";
 
-const app = createApp(App)
-app.config.globalProperties.$axios = axios
+const app = createApp(App);
+const pinia = createPinia();
 
-app.mount('#app')
+app.use(pinia);
+app.config.globalProperties.$axios = axios;
+
+app.mount("#app");

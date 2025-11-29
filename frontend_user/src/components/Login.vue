@@ -10,13 +10,13 @@
         <form @submit.prevent="handleLogin" class="login-form">
           <div class="form-group">
             <label>
-              <span class="label-icon">👤</span>
-              <span>Mã Nhân Viên</span>
+              <span class="label-icon">✉️</span>
+              <span>Gmail</span>
             </label>
             <input
-              v-model="formData.Ma_Nhan_Vien"
-              type="text"
-              placeholder="Nhập mã nhân viên"
+              v-model="formData.Email"
+              type="email"
+              placeholder="example@gmail.com"
               required
               class="form-input"
             />
@@ -48,7 +48,13 @@
         </form>
 
         <div class="login-footer">
-          <p>© 2025 Hệ Thống Quản Lý Thư Viện</p>
+          <p>
+            Chưa có tài khoản?
+            <a href="#" @click.prevent="$emit('switch-to-register')" class="register-link">
+              Đăng ký tại đây
+            </a>
+          </p>
+          <p style="margin-top: 1rem;">© 2025 Hệ Thống Quản Lý Thư Viện</p>
         </div>
       </div>
     </div>
@@ -63,7 +69,7 @@ export default {
   data() {
     return {
       formData: {
-        Ma_Nhan_Vien: "",
+        Email: "",
         Password: "",
       },
       loading: false,
@@ -77,11 +83,11 @@ export default {
 
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/auth/login",
+          "http://localhost:5000/api/auth/reader/login",
           this.formData
         );
 
-        localStorage.setItem("staff", JSON.stringify(response.data.staff));
+        localStorage.setItem("reader", JSON.stringify(response.data.reader));
         this.$emit("login-success");
       } catch (err) {
         this.error =
@@ -234,5 +240,17 @@ export default {
   color: #999;
   font-size: 14px;
   border-top: 1px solid #f0f0f0;
+}
+
+.login-footer a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.login-footer a:hover {
+  color: #764ba2;
+  text-decoration: underline;
 }
 </style>

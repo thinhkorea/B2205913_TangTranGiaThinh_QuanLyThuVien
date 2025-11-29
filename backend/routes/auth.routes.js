@@ -1,9 +1,21 @@
 import express from "express";
-import { login, getCurrentStaff } from "../controllers/auth.controller.js";
+import {
+  readerRegister,
+  staffLogin,
+  readerLogin,
+  getCurrentStaff,
+  getCurrentReader,
+} from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-router.post("/login", login);
-router.post("/verify", getCurrentStaff);
+// Staff (Admin) routes
+router.post("/staff/login", staffLogin);
+router.post("/staff/verify", getCurrentStaff);
+
+// Reader (User) routes
+router.post("/reader/register", readerRegister);
+router.post("/reader/login", readerLogin);
+router.post("/reader/verify", getCurrentReader);
 
 export default router;

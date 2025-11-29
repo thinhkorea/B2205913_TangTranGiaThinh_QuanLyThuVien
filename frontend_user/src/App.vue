@@ -1,171 +1,133 @@
 <template>
-  <div v-if="isLoggedIn" class="user-dashboard">
-    <header class="user-header">
-      <div class="header-left">
-        <h1>📚 Quản Lý Thư Viện</h1>
-        <p class="header-subtitle">Cổng Thông Tin Độc Giả</p>
-      </div>
-      <div class="user-info">
-        <div class="user-details">
-          <span class="user-name">👤 {{ currentUser?.Ho_Ten }}</span>
-          <span class="user-role">Độc Giả</span>
-        </div>
-        <button @click="handleLogout" class="logout-btn">🚪 Đăng Xuất</button>
-      </div>
-    </header>
-    <main>
-      <HelloWorld msg="Welcome to User Dashboard" />
+  <div v-if="isLoggedIn" class="app-container">
+    <!-- Main Content -->
+    <main class="main-content">
+      <Dashboard 
+        v-if="currentPage === 'dashboard'"
+        :key="dashboardKey"
+        @logout="handleLogout" 
+        @navigate="handleNavigate"
+      />
+      <BorrowBooks 
+        v-else-if="currentPage === 'borrow'"
+        :currentUser="currentUser"
+        @back="currentPage = 'dashboard'"
+        @logout="handleLogout"
+        @book-borrowed="handleBookBorrowed"
+      />
+      <BorrowHistory 
+        v-else-if="currentPage === 'history'"
+        :currentUser="currentUser"
+        @back="currentPage = 'dashboard'"
+        @logout="handleLogout"
+      />
     </main>
   </div>
-  <Login v-else @login-success="handleLoginSuccess" />
+  <Login v-else-if="!showRegister" @login-success="handleLoginSuccess" @switch-to-register="showRegister = true" />
+  <Register v-else @register-success="handleRegisterSuccess" @switch-to-login="showRegister = false" />
 </template>
 
 <script>
 import Login from "./components/Login.vue";
-import HelloWorld from "./components/HelloWorld.vue";
+import Register from "./components/Register.vue";
+import Dashboard from "./components/Dashboard.vue";
+import BorrowBooks from "./components/BorrowBooks.vue";
+import BorrowHistory from "./components/BorrowHistory.vue";
 
 export default {
   components: {
     Login,
-    HelloWorld,
+    Register,
+    Dashboard,
+    BorrowBooks,
+    BorrowHistory,
   },
   data() {
     return {
       isLoggedIn: false,
       currentUser: null,
+      showRegister: false,
+      currentPage: "dashboard",
+      dashboardKey: 0,
     };
   },
   mounted() {
-    const staff = localStorage.getItem("staff");
-    if (staff) {
-      this.currentUser = JSON.parse(staff);
+    const reader = localStorage.getItem("reader");
+    if (reader) {
+      this.currentUser = JSON.parse(reader);
       this.isLoggedIn = true;
     }
   },
   methods: {
     handleLoginSuccess() {
-      const staff = localStorage.getItem("staff");
-      this.currentUser = JSON.parse(staff);
+      const reader = localStorage.getItem("reader");
+      this.currentUser = JSON.parse(reader);
       this.isLoggedIn = true;
+      this.currentPage = "dashboard";
+    },
+    handleRegisterSuccess() {
+      this.showRegister = false;
+    },
+    handleNavigate(page) {
+      this.currentPage = page;
+      // Force Dashboard to reload when navigating back
+      if (page === 'dashboard') {
+        this.dashboardKey++;
+      }
+    },
+    handleBookBorrowed() {
+      // Giữ nguyên trang mượn sách, chỉ hiển thị thông báo thành công
+      // this.currentPage = "dashboard";
     },
     handleLogout() {
       if (confirm("Bạn chắc chắn muốn đăng xuất?")) {
-        localStorage.removeItem("staff");
+        localStorage.removeItem("reader");
         this.isLoggedIn = false;
         this.currentUser = null;
+        this.currentPage = "dashboard";
       }
     },
   },
 };
 </script>
 
-<style scoped>
-* {
+<style>
+html, body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  background: #f5f5f7;
 }
 
-.user-dashboard {
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f5f7fa 0%, #e9ecf1 100%);
+#app {
+  margin: 0;
+  padding: 0;
 }
+</style>
 
-.user-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-left h1 {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 5px;
-}
-
-.header-subtitle {
-  font-size: 12px;
-  opacity: 0.9;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.user-details {
+<style scoped>
+.app-container {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  background: #f5f5f7;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
 }
 
-.user-name {
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.user-role {
-  font-size: 11px;
-  opacity: 0.8;
-  text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 3px 8px;
-  border-radius: 12px;
-}
-
-.logout-btn {
-  background: white;
-  color: #667eea;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.logout-btn:hover {
-  background: #f0f0f0;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-main {
-  padding: 30px;
-  max-width: 1400px;
-  margin: 0 auto;
+/* Main Content */
+.main-content {
+  flex: 1;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
-  .user-header {
-    flex-direction: column;
-    gap: 20px;
-    text-align: center;
-  }
-
-  .user-details {
-    align-items: center;
-  }
-
-  .header-left h1 {
-    font-size: 22px;
-  }
-
-  main {
-    padding: 20px;
+  .app-container {
+    padding: 0;
   }
 }
 </style>
+

@@ -14,13 +14,14 @@ const borrowSchema = new mongoose.Schema(
     },
     Ngay_Muon: { type: Date, default: Date.now },
     Ngay_Tra: { type: Date },
+    Ngay_Tra_Thuc_Te: { type: Date }, // Ngày trả thực tế
     trang_thai: {
       type: String,
       enum: ["Đang mượn", "Đã trả"],
       default: "Đang mượn",
     },
   },
-  { collection: "Theo_Doi_Muon_Sach", timestamps: true }
+  { collection: "Theo_Doi_Muon_Sach", timestamps: true, versionKey: false }
 );
 
 export default mongoose.model("Borrow", borrowSchema);

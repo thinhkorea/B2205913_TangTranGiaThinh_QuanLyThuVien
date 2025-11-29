@@ -11,7 +11,7 @@ const staffSchema = new mongoose.Schema(
     So_Dien_Thoai: { type: String },
     Role: { type: String, enum: ["admin", "user"], default: "user" },
   },
-  { collection: "Nhan_Vien", timestamps: true }
+  { collection: "Nhan_Vien", timestamps: true, versionKey: false }
 );
 
 // Hash password trước khi lưu

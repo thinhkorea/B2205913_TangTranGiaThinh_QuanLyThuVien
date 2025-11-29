@@ -77,17 +77,13 @@ export default {
 
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/auth/login",
+          "http://localhost:5000/api/auth/staff/login",
           this.formData
         );
 
-        // Kiểm tra role là admin
-        if (response.data.staff.Role === "admin") {
-          localStorage.setItem("staff", JSON.stringify(response.data.staff));
-          this.$emit("login-success");
-        } else {
-          this.error = "❌ Bạn không có quyền truy cập khu vực Admin";
-        }
+        // Admin login successful
+        localStorage.setItem("staff", JSON.stringify(response.data.staff));
+        this.$emit("login-success");
       } catch (err) {
         this.error =
           err.response?.data?.message ||

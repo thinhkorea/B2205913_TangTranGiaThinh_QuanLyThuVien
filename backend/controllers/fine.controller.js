@@ -3,6 +3,7 @@ import Borrow from "../models/borrow.model.js";
 import Book from "../models/book.model.js";
 import mongoose from "mongoose";
 import { emitEvent } from "../config/socket.js";
+import EmailService from "../services/email.service.js";
 
 // Tạo mới bản ghi tiền phạt
 export const createFine = async (req, res) => {
@@ -53,6 +54,19 @@ export const createFine = async (req, res) => {
         },
       })
       .populate("Ma_Muon");
+
+    // Gửi email thông báo phạt
+    if (populatedFine.Ma_Doc_Gia?.Email) {
+      const readerName = `${populatedFine.Ma_Doc_Gia.Ho_Lot || ""} ${
+        populatedFine.Ma_Doc_Gia.Ten || ""
+      }`.trim();
+      await EmailService.sendFineNotificationEmail(
+        populatedFine.Ma_Doc_Gia.Email,
+        readerName || "Độc giả",
+        populatedFine.Tong_Tien,
+        populatedFine.Ghi_Chu || "Trả sách quá hạn"
+      );
+    }
 
     res.status(201).json(populatedFine);
   } catch (error) {
@@ -310,19 +324,21 @@ export const autoCreateOverdueFines = async (req, res) => {
         console.log(
           `Borrow ${borrow._id} still valid. Due: ${dueDate.toISOString()}`
         );
-        
+
         // Xóa fine nếu có (trường hợp sửa Ngay_Hen_Tra thành tương lai)
         const existingFine = await Fine.findOne({
           Ma_Muon: borrow._id,
-          Trang_Thai_Thanh_Toan: "Chưa thanh toán"
+          Trang_Thai_Thanh_Toan: "Chưa thanh toán",
         });
-        
+
         if (existingFine) {
           await Fine.findByIdAndDelete(existingFine._id);
           deletedCount++;
-          console.log(`Deleted fine for borrow ${borrow._id} (no longer overdue)`);
+          console.log(
+            `Deleted fine for borrow ${borrow._id} (no longer overdue)`
+          );
         }
-        
+
         continue;
       }
 
@@ -406,7 +422,12 @@ export const autoCreateOverdueFines = async (req, res) => {
 
     // Emit real-time update if any fines were created/updated/deleted
     if (createdCount > 0 || updatedCount > 0 || deletedCount > 0) {
-      emitEvent("fine:created", { createdCount, updatedCount, deletedCount, type: "auto" });
+      emitEvent("fine:created", {
+        createdCount,
+        updatedCount,
+        deletedCount,
+        type: "auto",
+      });
     }
 
     res.status(200).json({

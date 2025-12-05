@@ -1,4 +1,5 @@
 import Reader from "../models/reader.model.js";
+import EmailService from "../services/email.service.js";
 
 // Lấy danh sách độc giả
 export const getAllReaders = async (req, res) => {
@@ -27,6 +28,13 @@ export const getReaderById = async (req, res) => {
 export const createReader = async (req, res) => {
   try {
     const newReader = await Reader.create(req.body);
+    
+    // Gửi email chào mừng
+    if (newReader.Email) {
+      const readerName = `${newReader.Ho_Lot || ''} ${newReader.Ten || ''}`.trim();
+      await EmailService.sendWelcomeEmail(newReader.Email, readerName || 'Độc giả');
+    }
+    
     res.status(201).json(newReader);
   } catch (error) {
     res.status(400).json({ message: "Lỗi khi thêm độc giả", error });

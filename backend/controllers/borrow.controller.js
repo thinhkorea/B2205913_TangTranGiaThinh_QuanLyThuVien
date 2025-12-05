@@ -3,6 +3,7 @@ import Book from "../models/book.model.js";
 import Fine from "../models/fine.model.js";
 import mongoose from "mongoose";
 import { emitEvent } from "../config/socket.js";
+import EmailService from "../services/email.service.js";
 
 // Lấy danh sách mượn sách
 export const getAllBorrows = async (req, res) => {
@@ -104,6 +105,18 @@ export const createBorrow = async (req, res) => {
       },
     });
 
+    // Gửi email xác nhận mượn sách
+    if (newBorrow.Ma_Doc_Gia?.Email && newBorrow.Ma_Sach) {
+      const readerName = `${newBorrow.Ma_Doc_Gia.Ho_Lot || ''} ${newBorrow.Ma_Doc_Gia.Ten || ''}`.trim();
+      await EmailService.sendBorrowConfirmationEmail(
+        newBorrow.Ma_Doc_Gia.Email,
+        readerName || 'Độc giả',
+        newBorrow.Ma_Sach.Ten_Sach || 'N/A',
+        newBorrow.Ngay_Muon,
+        newBorrow.Ngay_Hen_Tra
+      );
+    }
+
     // Emit real-time update
     emitEvent("borrow:created", { borrowId: newBorrow._id });
 
@@ -192,6 +205,17 @@ export const updateBorrow = async (req, res) => {
         { $inc: { So_Quyen: 1 } },
         { new: true }
       );
+
+      // Gửi email xác nhận trả sách
+      if (updated.Ma_Doc_Gia?.Email && updated.Ma_Sach) {
+        const readerName = `${updated.Ma_Doc_Gia.Ho_Lot || ''} ${updated.Ma_Doc_Gia.Ten || ''}`.trim();
+        await EmailService.sendReturnConfirmationEmail(
+          updated.Ma_Doc_Gia.Email,
+          readerName || 'Độc giả',
+          updated.Ma_Sach.Ten_Sach || 'N/A',
+          updateData.Ngay_Tra || new Date()
+        );
+      }
 
       // Emit books updated event for real-time sync
       emitEvent("books:updated", { bookId: originalBorrow.Ma_Sach });
